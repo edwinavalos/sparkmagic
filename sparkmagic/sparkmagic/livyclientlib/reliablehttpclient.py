@@ -20,14 +20,18 @@ class ReliableHttpClient(object):
         self._endpoint = endpoint
         self._headers = headers
         self._retry_policy = retry_policy
+        self.logger = SparkLog(u"ReliableHttpClient")
         if self._endpoint.auth == constants.AUTH_KERBEROS:
-            self._auth = HTTPKerberosAuth(mutual_authentication=REQUIRED)
+            if self._endpoint.kerberos_principal:
+                self.logger.debug(u"Using Keberos Authentication w/Principal")
+                self._auth = HTTPKerberosAuth(mutual_authentication=REQUIRED, principal=self._endpoint.kerberos_principal)
+            else:
+                self.logger.debug(u"Using Keberos Authentication with default principal")
+                self._auth = HTTPKerberosAuth(mutual_authentication=REQUIRED)
         elif self._endpoint.auth == constants.AUTH_BASIC:
             self._auth = (self._endpoint.username, self._endpoint.password)
         elif self._endpoint.auth != constants.NO_AUTH:
             raise BadUserConfigurationException(u"Unsupported auth %s" %self._endpoint.auth)
-
-        self.logger = SparkLog(u"ReliableHttpClient")
 
         self.verify_ssl = not conf.ignore_ssl_errors()
         if not self.verify_ssl:

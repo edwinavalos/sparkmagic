@@ -11,6 +11,8 @@ USER $NB_USER
 
 RUN pip install --upgrade pip
 RUN pip install --upgrade --ignore-installed setuptools
+# Fixes master on sparkmagic
+RUN pip install pandas==0.22.0
 
 COPY examples /home/jovyan/work
 
